@@ -1,112 +1,224 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, Play, ArrowRight } from "lucide-react";
+import { Trophy, AlertTriangle } from "lucide-react";
 import Layout from "@/components/Layout";
 import Card from "@/components/Card";
+import CourseModule from "@/components/course/CourseModule";
+import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 
 const Webinars = () => {
-  const upcomingWebinar = {
-    title: "What Every First-Time Buyer Needs to Know (Before You Start Looking)",
-    description:
-      "The questions you didn't know to ask — and the mistakes that cost buyers thousands",
-    date: "January 25, 2026",
-    time: "12pm EST",
-  };
-
-  const pastWebinars = [
-    { id: 1, title: "Understanding Mortgage Pre-Approval" },
-    { id: 2, title: "Hidden Costs of Home Buying" },
-    { id: 3, title: "Down Payment Assistance Programs Explained" },
-    { id: 4, title: "Navigating Your First Home Purchase" },
+  const modules = [
+    {
+      moduleNumber: 1,
+      title: "What 99% of Buyers Don't Know Before They Start",
+      status: "completed-live" as const,
+      materials: [
+        { name: "Homebuying Readiness Checklist", unlocked: true },
+        { name: "BONUS: First Questions to Ask Any Agent", unlocked: true },
+      ],
+    },
+    {
+      moduleNumber: 2,
+      title: "The Money Part: What You Really Need",
+      status: "completed-replay" as const,
+      materials: [
+        { name: "Down Payment Calculator", unlocked: true },
+        { name: "Assistance Program Finder", unlocked: true },
+      ],
+      bonusNote: "You missed the live bonus: Negotiation Scripts",
+    },
+    {
+      moduleNumber: 3,
+      title: "Pre-Approval Secrets: How to Be a Stronger Buyer",
+      status: "homework-required" as const,
+      materials: [
+        { name: "Pre-Approval Preparation Worksheet", unlocked: false },
+        { name: "Lender Comparison Template", unlocked: false },
+      ],
+      homeworkQuestions: [
+        { question: "What's the difference between pre-qualified and pre-approved?", type: "text" as const },
+        { question: "What documents will you gather this week to prepare?", type: "text" as const },
+        { 
+          question: "When do you plan to start the pre-approval process?", 
+          type: "dropdown" as const,
+          options: ["This week", "This month", "In 2-3 months", "Not sure yet"]
+        },
+        { question: "What's ONE action you commit to taking this week?", type: "text" as const },
+      ],
+    },
+    {
+      moduleNumber: 4,
+      title: "Finding THE Home: Search Like a Pro",
+      status: "locked" as const,
+      materials: [
+        { name: "Home Search Strategy Guide", unlocked: false },
+        { name: "BONUS: Red Flags Checklist (live only)", unlocked: false },
+      ],
+      liveDate: "February 15, 2026 at 12pm EST",
+      liveBenefits: [
+        "Materials unlock immediately",
+        "Live Q&A with Siri",
+        "BONUS: Red Flags Checklist (live only)",
+      ],
+    },
+    {
+      moduleNumber: 5,
+      title: "The Offer to Close: What Actually Happens",
+      status: "locked" as const,
+      materials: [
+        { name: "Offer Strategy Playbook", unlocked: false },
+        { name: "Closing Cost Estimator", unlocked: false },
+      ],
+      lockMessage: "Complete Module 4 first",
+    },
+    {
+      moduleNumber: 6,
+      title: "Beyond the Keys: What New Homeowners Must Know",
+      status: "locked" as const,
+      materials: [
+        { name: "First 30 Days Checklist", unlocked: false },
+        { name: "Home Maintenance Calendar", unlocked: false },
+      ],
+      lockMessage: "Complete Module 5 first",
+    },
   ];
+
+  const completedModules = 2;
+  const totalModules = 6;
 
   return (
     <Layout>
       <div className="min-h-screen bg-background md:pt-16">
-        <div className="container py-8 max-w-2xl">
-          {/* Header */}
+        <div className="container py-8 max-w-3xl">
+          {/* Course Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="text-center mb-6"
           >
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Learn with Siri
+            <h1 className="font-display text-2xl md:text-4xl font-bold text-foreground mb-2">
+              FIRST-TIME BUYER MASTERY
             </h1>
-            <p className="text-muted-foreground">
-              Free webinars to help you buy with confidence
+            <p className="text-primary font-semibold text-lg mb-2">
+              Be Better Prepared Than 99% of Buyers
+            </p>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              A free 6-part webinar series that gives you everything you need to buy your first home with confidence.
             </p>
           </motion.div>
 
-          {/* Featured Upcoming Webinar */}
+          {/* Progress */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-10"
+            className="mb-6"
           >
-            <div className="relative overflow-hidden rounded-2xl gradient-primary p-6 md:p-8">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+            <Card animate={false} className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Your Progress: <span className="font-semibold text-foreground">{completedModules} of {totalModules} Completed</span>
+              </p>
+              <Progress value={(completedModules / totalModules) * 100} className="h-3 max-w-xs mx-auto" />
+            </Card>
+          </motion.div>
 
-              <div className="relative">
-                <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-primary-foreground text-xs font-medium mb-4">
-                  UPCOMING
-                </span>
-
-                <h2 className="font-display text-xl md:text-2xl font-bold text-primary-foreground mb-3">
-                  {upcomingWebinar.title}
-                </h2>
-
-                <p className="text-primary-foreground/80 text-sm mb-6">
-                  {upcomingWebinar.description}
-                </p>
-
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <div className="flex items-center gap-2 text-primary-foreground/90">
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-sm">{upcomingWebinar.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-primary-foreground/90">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm">{upcomingWebinar.time}</span>
-                  </div>
+          {/* Important Notice Box */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8"
+          >
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">HOW THIS WORKS</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Each webinar unlocks exclusive tools and templates. But here's the thing:
+                  </p>
+                  <p className="text-sm text-foreground font-medium mb-3">
+                    The materials are only valuable if you know how to use them properly.
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• <strong>Attend LIVE</strong> → Materials unlock immediately + bonus content + Q&A with Siri</li>
+                    <li>• <strong>Watch REPLAY</strong> → Complete the homework to unlock materials</li>
+                  </ul>
+                  <p className="text-sm text-foreground mt-3 italic">
+                    The webinar teaches you HOW to use the tools. Don't skip it.
+                  </p>
                 </div>
-
-                <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-4 bg-white text-primary font-semibold rounded-xl hover:bg-white/90 transition-colors">
-                  Register Now — It's Free
-                  <ArrowRight className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </motion.div>
 
-          {/* Past Webinars */}
-          <div>
-            <h2 className="font-semibold text-foreground text-lg mb-4">Past Webinars</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {pastWebinars.map((webinar, index) => (
-                <Card key={webinar.id} delay={0.2 + index * 0.1}>
-                  <div className="flex flex-col">
-                    {/* Video Placeholder */}
-                    <div className="aspect-video bg-secondary rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
-                      <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center relative z-10">
-                        <Play className="w-6 h-6 text-primary-foreground ml-1" />
-                      </div>
-                    </div>
-
-                    <h3 className="font-medium text-foreground text-sm mb-3">
-                      {webinar.title}
-                    </h3>
-
-                    <button className="w-full py-2.5 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
-                      Watch Replay
-                    </button>
-                  </div>
-                </Card>
-              ))}
-            </div>
+          {/* Course Modules */}
+          <div className="space-y-4 mb-8">
+            {modules.map((module, i) => (
+              <CourseModule
+                key={module.moduleNumber}
+                {...module}
+                delay={0.2 + i * 0.1}
+              />
+            ))}
           </div>
+
+          {/* Course Completion Reward Box */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mb-8"
+          >
+            <div className="border-2 border-yellow-400 bg-yellow-50 rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-6 h-6 text-yellow-600" />
+                <h3 className="font-bold text-foreground text-lg">
+                  COMPLETE ALL 6 MODULES TO UNLOCK
+                </h3>
+              </div>
+              
+              <p className="text-sm text-muted-foreground mb-4">
+                When you finish the course and all homework, you earn:
+              </p>
+
+              <ul className="space-y-2 mb-6">
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-lg">🎓</span>
+                  <span className="text-foreground">"Ready to Buy" Certification badge</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-lg">📦</span>
+                  <span className="text-foreground">All 6 material kits (12+ tools and templates)</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-lg">📞</span>
+                  <span className="text-foreground font-semibold">FREE 1-Hour Strategy Call with Siri</span>
+                </li>
+              </ul>
+
+              <div className="bg-white border border-yellow-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-foreground italic">
+                  "I only work closely with people who've done the preparation. When you complete this course, you'll know more than 99% of first-time buyers. That's when we should talk."
+                </p>
+                <p className="text-sm font-semibold text-primary mt-2">— Siri</p>
+              </div>
+
+              <p className="text-sm text-muted-foreground text-center">
+                Your Progress: <span className="font-semibold text-foreground">{completedModules} of {totalModules}</span> complete. Keep going!
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Demo Note */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="text-center text-xs text-muted-foreground opacity-60"
+          >
+            Demo Version
+          </motion.p>
         </div>
       </div>
     </Layout>

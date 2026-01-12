@@ -10,7 +10,8 @@ import {
   Home,
   ArrowRight,
   Phone,
-  MapPin
+  MapPin,
+  Lightbulb
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -20,6 +21,8 @@ import ChecklistItem from "@/components/dashboard/ChecklistItem";
 import StatCard from "@/components/dashboard/StatCard";
 import RecommendationCard from "@/components/dashboard/RecommendationCard";
 import WebinarCard from "@/components/dashboard/WebinarCard";
+import StatusBadge from "@/components/StatusBadge";
+import CommitmentItem from "@/components/dashboard/CommitmentItem";
 import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
@@ -34,7 +37,16 @@ const Dashboard = () => {
     { id: 8, text: "Schedule a call with Siri", completed: false },
   ];
 
+  const commitments = [
+    { id: 1, text: "Check my credit score this week", committedDate: "Jan 12", completed: false },
+    { id: 2, text: "Research down payment assistance programs", committedDate: "Jan 15", completed: false },
+    { id: 3, text: "Save $500 more this month", committedDate: "Jan 8", completed: true, completedDate: "Jan 18" },
+    { id: 4, text: "Get pre-qualification letter", committedDate: "Jan 20", completed: false },
+  ];
+
   const completedCount = checklistItems.filter(item => item.completed).length;
+  const completedCommitments = commitments.filter(c => c.completed).length;
+  const commitmentRate = Math.round((completedCommitments / commitments.length) * 100);
 
   return (
     <Layout>
@@ -81,6 +93,17 @@ const Dashboard = () => {
             </div>
           </Card>
 
+          {/* Section: Your Status */}
+          <StatusBadge
+            tier="learner"
+            showProgress
+            progressValue={66}
+            progressMessage="You're making progress! Complete 2 more webinars and their homework to become an Action Taker and unlock your free strategy call with Siri."
+            delay={0.15}
+          />
+
+          <div className="mb-6" />
+
           {/* Section 2: Homebuying Checklist */}
           <Card delay={0.2} className="mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -96,6 +119,35 @@ const Dashboard = () => {
             <p className="text-xs text-muted-foreground mt-4 text-center">
               Check off items as you complete them
             </p>
+          </Card>
+
+          {/* Section: Your Commitments */}
+          <Card delay={0.25} className="mb-6">
+            <h2 className="font-semibold text-foreground text-lg mb-1">Your Commitments</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              You said you would do these things. Did you?
+            </p>
+            <div className="space-y-3">
+              {commitments.map((commitment, i) => (
+                <CommitmentItem
+                  key={commitment.id}
+                  text={commitment.text}
+                  committedDate={commitment.committedDate}
+                  completed={commitment.completed}
+                  completedDate={commitment.completedDate}
+                  delay={0.3 + i * 0.05}
+                />
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm text-foreground">
+                Your Completion Rate: <span className="font-semibold">{commitmentRate}%</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Lightbulb className="w-3 h-3 text-primary" />
+                Action Takers complete 80%+ of their commitments.
+              </p>
+            </div>
           </Card>
 
           {/* Section 3: Your Numbers */}
