@@ -1,13 +1,118 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { motion } from "framer-motion";
+import { ClipboardCheck, Video, LayoutDashboard, Users } from "lucide-react";
+import Layout from "@/components/Layout";
+import CTAButton from "@/components/CTAButton";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <Layout>
+      <div className="gradient-hero min-h-screen md:pt-16">
+        {/* Hero Section */}
+        <div className="container py-12 md:py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-2xl mx-auto"
+          >
+            {/* Name */}
+            <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground tracking-tight mb-3">
+              SIRI SOLANGE
+            </h1>
+
+            {/* Credentials */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-primary font-medium text-sm md:text-base tracking-widest mb-6"
+            >
+              MD • MBA • Real Estate Professional
+            </motion.p>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-10 md:mb-16 px-4"
+            >
+              Helping first-time buyers, investors, and empty nesters find their
+              perfect homes
+            </motion.p>
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <div className="max-w-md mx-auto space-y-3 px-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <CTAButton
+                to="/assessment"
+                variant="primary"
+                icon={<ClipboardCheck className="w-5 h-5" />}
+              >
+                Am I Ready to Buy My First Home?
+              </CTAButton>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <CTAButton
+                to="/webinars"
+                variant="outline"
+                icon={<Video className="w-5 h-5" />}
+              >
+                Join My Next Webinar
+              </CTAButton>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <CTAButton
+                to="/dashboard"
+                variant="outline"
+                icon={<LayoutDashboard className="w-5 h-5" />}
+              >
+                My Dashboard
+              </CTAButton>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <CTAButton
+                to="/partners"
+                variant="outline"
+                icon={<Users className="w-5 h-5" />}
+              >
+                Meet My Trusted Partners
+              </CTAButton>
+            </motion.div>
+          </div>
+
+          {/* Demo Version Note */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center text-xs text-muted-foreground mt-16 opacity-60"
+          >
+            Demo Version
+          </motion.p>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
