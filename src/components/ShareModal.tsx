@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X, Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface ShareModalProps {
@@ -14,42 +13,76 @@ const shareOptions = [
     id: "first-time",
     icon: "🏠",
     label: "Someone buying their first home",
-    link: "siris.app/start/first-time-buyer",
+    link: "https://siris.app/start/first-time-buyer",
+    text: "Hey! I found this app that helps first-time home buyers get prepared. Check it out!",
   },
   {
     id: "investor",
     icon: "📈",
     label: "Someone interested in investing",
-    link: "siris.app/start/investor",
+    link: "https://siris.app/start/investor",
+    text: "Thought you might like this — it's an app for real estate investors.",
   },
   {
     id: "empty-nester",
     icon: "🪺",
     label: "Parents who might be downsizing",
-    link: "siris.app/start/empty-nester",
+    link: "https://siris.app/start/empty-nester",
+    text: "This app helps empty nesters find their next home. Made me think of you!",
   },
   {
     id: "relocator",
     icon: "📍",
     label: "Someone relocating here",
-    link: "siris.app/start/relocator",
+    link: "https://siris.app/start/relocator",
+    text: "If you're moving to the area, this app is super helpful!",
   },
   {
     id: "general",
     icon: "🔗",
     label: "Just share the general link",
-    link: "siris.app",
+    link: "https://siris.app",
+    text: "Check out this real estate app from Siri Solange!",
   },
 ];
 
 const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
-  const handleShare = (option: typeof shareOptions[0]) => {
-    navigator.clipboard.writeText(`https://${option.link}`);
+  const handleShare = async (option: typeof shareOptions[0]) => {
+    setIsSharing(true);
+
+    // Check if Web Share API is available
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Siri Solange Real Estate App",
+          text: option.text,
+          url: option.link,
+        });
+        toast.success("Shared successfully!");
+        onClose();
+      } catch (error) {
+        // User cancelled or share failed
+        if ((error as Error).name !== "AbortError") {
+          // Fall back to copy if share failed (not cancelled)
+          handleCopyFallback(option);
+        }
+      }
+    } else {
+      // Fall back to clipboard copy for browsers without Web Share API
+      handleCopyFallback(option);
+    }
+
+    setIsSharing(false);
+  };
+
+  const handleCopyFallback = (option: typeof shareOptions[0]) => {
+    navigator.clipboard.writeText(option.link);
     setCopiedLink(option.link);
     toast.success("Link copied! Share it however you like.");
-    
+
     setTimeout(() => {
       setCopiedLink(null);
     }, 3000);
@@ -97,7 +130,8 @@ const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                   <button
                     key={option.id}
                     onClick={() => handleShare(option)}
-                    className="w-full flex items-center justify-between p-4 bg-muted/50 hover:bg-muted rounded-xl transition-colors text-left"
+                    disabled={isSharing}
+                    className="w-full flex items-center justify-between p-4 bg-muted/50 hover:bg-muted rounded-xl transition-colors text-left disabled:opacity-50"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">{option.icon}</span>
@@ -105,8 +139,10 @@ const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                         {option.label}
                       </span>
                     </div>
-                    {copiedLink === option.link && (
+                    {copiedLink === option.link ? (
                       <Check className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <Share2 className="w-4 h-4 text-muted-foreground" />
                     )}
                   </button>
                 ))}
@@ -116,16 +152,33 @@ const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg"
+                  className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg"
                 >
-                  <p className="text-sm text-green-700 text-center">
-                    Link copied! Share it however you like.
-                  </p>
-                  <p className="text-xs text-green-600 text-center mt-1 font-mono">
-                    https://{copiedLink}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        Link copied! Share it however you like.
+                      </p>
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-mono truncate max-w-[250px]">
+                        {copiedLink}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(copiedLink);
+                        toast.success("Copied again!");
+                      }}
+                      className="p-2 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-lg transition-colors"
+                    >
+                      <Copy className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </button>
+                  </div>
                 </motion.div>
               )}
+
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                {navigator.share ? "Opens your device's share menu" : "Link will be copied to clipboard"}
+              </p>
             </div>
           </motion.div>
         </>
