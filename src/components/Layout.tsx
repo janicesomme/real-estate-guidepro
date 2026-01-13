@@ -22,7 +22,7 @@ const Layout = ({ children, hideNav = false, hideFloatingButton = false }: Layou
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 pb-24 md:pb-0">{children}</main>
 
       {/* Floating Ask Siri Button */}
       {!hideFloatingButton && <FloatingAskSiri />}
@@ -31,7 +31,8 @@ const Layout = ({ children, hideNav = false, hideFloatingButton = false }: Layou
         <>
           {/* Mobile Bottom Navigation */}
           <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-50">
-            <div className="flex justify-around items-center h-16 px-2 safe-area-pb">
+            <div className="flex flex-col">
+              <div className="flex justify-around items-center h-16 px-2">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path || (item.path === "/home" && location.pathname === "/");
                 const Icon = item.icon;
@@ -63,6 +64,15 @@ const Layout = ({ children, hideNav = false, hideFloatingButton = false }: Layou
                   </Link>
                 );
               })}
+              </div>
+              <div className="flex justify-center py-1 border-t border-border/50 safe-area-pb">
+                <Link 
+                  to="/agent" 
+                  className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                >
+                  Agent Login
+                </Link>
+              </div>
             </div>
           </nav>
 
@@ -91,6 +101,12 @@ const Layout = ({ children, hideNav = false, hideFloatingButton = false }: Layou
                     </Link>
                   );
                 })}
+                <Link
+                  to="/agent"
+                  className="ml-4 px-3 py-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                >
+                  Agent Login
+                </Link>
               </div>
             </div>
           </nav>
