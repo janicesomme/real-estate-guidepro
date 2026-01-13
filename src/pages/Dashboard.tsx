@@ -26,6 +26,7 @@ import CommitmentItem from "@/components/dashboard/CommitmentItem";
 import AskSiriBox from "@/components/AskSiriBox";
 import ShareSection from "@/components/ShareSection";
 import OtherPathsSection from "@/components/dashboard/OtherPathsSection";
+import ReferralCards from "@/components/dashboard/ReferralCards";
 import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
@@ -354,11 +355,14 @@ const Dashboard = () => {
             </div>
           </Card>
 
+          {/* Section: Know Someone Buying or Selling? */}
+          <ReferralCards />
+
           {/* Section: Share & Earn */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.75 }}
+            transition={{ delay: 0.85 }}
             className="mb-6"
           >
             <ShareSection variant="referral" />

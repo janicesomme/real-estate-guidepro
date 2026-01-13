@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ClipboardCheck, Video, LayoutDashboard, Users } from "lucide-react";
+import { ClipboardCheck, Video, LayoutDashboard, Users, Home, Tag } from "lucide-react";
 import Layout from "@/components/Layout";
 import CTAButton from "@/components/CTAButton";
 import PathIndicator from "@/components/PathIndicator";
@@ -124,6 +124,34 @@ const Index = () => {
                 icon={<Users className="w-5 h-5" />}
               >
                 Meet My Trusted Partners
+              </CTAButton>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <CTAButton
+                to="/find-your-home"
+                variant="outline"
+                icon={<Home className="w-5 h-5" />}
+              >
+                🏠 Let Me Find Your Home
+              </CTAButton>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9 }}
+            >
+              <CTAButton
+                to="/selling"
+                variant="outline"
+                icon={<Tag className="w-5 h-5" />}
+              >
+                🏷️ Thinking of Selling?
               </CTAButton>
             </motion.div>
           </div>
