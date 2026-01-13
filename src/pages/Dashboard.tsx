@@ -23,6 +23,8 @@ import RecommendationCard from "@/components/dashboard/RecommendationCard";
 import WebinarCard from "@/components/dashboard/WebinarCard";
 import StatusBadge from "@/components/StatusBadge";
 import CommitmentItem from "@/components/dashboard/CommitmentItem";
+import AskSiriBox from "@/components/AskSiriBox";
+import ShareSection from "@/components/ShareSection";
 import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
@@ -150,7 +152,21 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          {/* Section 3: Your Numbers */}
+          {/* Section: Ask Siri */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.27 }}
+            className="mb-6"
+          >
+            <AskSiriBox
+              header="💬 Stuck? Ask Siri"
+              text="Not sure what to do next? Confused about something? Need advice? Just ask."
+              placeholder="Type your question..."
+              buttonText="Send"
+              showSignature
+            />
+          </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -336,6 +352,16 @@ const Dashboard = () => {
               </button>
             </div>
           </Card>
+
+          {/* Section: Share & Earn */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+            className="mb-6"
+          >
+            <ShareSection variant="referral" />
+          </motion.div>
 
           {/* Section 8: Quick Actions Footer */}
           <motion.div

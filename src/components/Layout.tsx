@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Home, Video, LayoutDashboard, User } from "lucide-react";
 import { motion } from "framer-motion";
+import FloatingAskSiri from "@/components/FloatingAskSiri";
 
 interface LayoutProps {
   children: ReactNode;
@@ -21,6 +22,9 @@ const Layout = ({ children, hideNav = false }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
+
+      {/* Floating Ask Siri Button */}
+      <FloatingAskSiri />
 
       {!hideNav && (
         <>

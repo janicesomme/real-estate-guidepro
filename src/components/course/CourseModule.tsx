@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Lock, Eye, Calendar, Download, AlertTriangle } from "lucide-react";
+import { Check, Lock, Eye, Calendar, Download, AlertTriangle, MessageCircle, Share2 } from "lucide-react";
 import { useState } from "react";
 
 type ModuleStatus = "completed-live" | "completed-replay" | "homework-required" | "locked";
@@ -66,6 +66,7 @@ const CourseModule = ({
   delay = 0,
 }: CourseModuleProps) => {
   const [showHomework, setShowHomework] = useState(false);
+  const [showAskSiri, setShowAskSiri] = useState(false);
   const config = statusConfig[status];
   const StatusIcon = config.icon;
   const isLocked = status === "locked";
@@ -200,9 +201,26 @@ const CourseModule = ({
 
         {/* Action button */}
         {(status === "completed-live" || status === "completed-replay") && (
-          <button className="mt-4 px-4 py-2 bg-secondary text-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">
-            Watch Replay
-          </button>
+          <div className="mt-4 space-y-3">
+            <button className="px-4 py-2 bg-secondary text-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">
+              Watch Replay
+            </button>
+            
+            {/* Ask Siri & Share for completed modules */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => setShowAskSiri(!showAskSiri)}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Something Unclear?
+              </button>
+              <button className="flex items-center justify-center gap-2 px-4 py-2 border border-border text-muted-foreground rounded-lg text-sm font-medium hover:bg-secondary transition-colors">
+                <Share2 className="w-4 h-4" />
+                Share Webinar
+              </button>
+            </div>
+          </div>
         )}
 
         {isLocked && liveDate && (
@@ -211,6 +229,26 @@ const CourseModule = ({
           </button>
         )}
       </div>
+
+      {/* Ask Siri Section for completed modules */}
+      {(status === "completed-live" || status === "completed-replay") && showAskSiri && (
+        <div className="border-t border-green-200 bg-white p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageCircle className="w-4 h-4 text-primary" />
+            <h4 className="font-semibold text-foreground text-sm">Something Unclear?</h4>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            This module covered a lot. If anything didn't make sense, ask before moving on.
+          </p>
+          <textarea
+            placeholder="What's your question about this module?"
+            className="w-full min-h-[60px] p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm mb-3"
+          />
+          <button className="px-5 py-2 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors">
+            Ask Siri
+          </button>
+        </div>
+      )}
 
       {/* Homework Form */}
       {isHomeworkRequired && showHomework && homeworkQuestions && (
@@ -241,6 +279,24 @@ const CourseModule = ({
             <button className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors">
               Submit & Unlock Materials
             </button>
+
+            {/* Ask Siri after Homework */}
+            <div className="mt-4 pt-4 border-t border-amber-100">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageCircle className="w-4 h-4 text-primary" />
+                <h5 className="font-medium text-foreground text-sm">Anything Else?</h5>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                You've completed the homework — nice work. If you have any lingering questions before moving on, ask now.
+              </p>
+              <textarea
+                placeholder="Any questions?"
+                className="w-full min-h-[50px] p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm mb-2"
+              />
+              <button className="px-4 py-2 border border-primary text-primary rounded-lg font-medium text-sm hover:bg-primary/5 transition-colors">
+                Ask Siri
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProgressBar from "@/components/ProgressBar";
 import Card from "@/components/Card";
+import AskSiriBox from "@/components/AskSiriBox";
+import ShareSection from "@/components/ShareSection";
 
 interface Question {
   id: number;
@@ -187,7 +189,7 @@ const Assessment = () => {
               </Card>
 
               {/* CTAs */}
-              <div className="space-y-3">
+              <div className="space-y-3 mb-6">
                 <Link
                   to="/webinars"
                   className="flex items-center justify-center w-full py-4 px-6 rounded-xl gradient-primary text-primary-foreground font-semibold shadow-button hover:opacity-90 transition-opacity"
@@ -200,14 +202,30 @@ const Assessment = () => {
                 >
                   Save Results to My Dashboard
                 </Link>
-                <Link
-                  to="/"
-                  className="flex items-center justify-center gap-2 w-full py-3 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Home className="w-4 h-4" />
-                  Back to Home
-                </Link>
               </div>
+
+              {/* Ask Siri Box */}
+              <div className="mb-6">
+                <AskSiriBox
+                  header="💬 Questions About Your Results?"
+                  text="Your score might raise some questions. That's normal. Ask me anything about what it means or what to do next."
+                  placeholder="What's your question about your results?"
+                  buttonText="Send to Siri"
+                />
+              </div>
+
+              {/* Share Section */}
+              <div className="mb-6">
+                <ShareSection variant="assessment" />
+              </div>
+
+              <Link
+                to="/"
+                className="flex items-center justify-center gap-2 w-full py-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                Back to Home
+              </Link>
             </motion.div>
           </div>
         </div>

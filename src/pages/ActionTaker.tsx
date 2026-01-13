@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Trophy, Gift, Award, Calendar, CheckCircle, Download } from "lucide-react";
 import Layout from "@/components/Layout";
 import Card from "@/components/Card";
+import ShareSection from "@/components/ShareSection";
 
 const ActionTaker = () => {
   const stats = [
@@ -130,12 +131,22 @@ const ActionTaker = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
-            className="bg-primary/5 border border-primary/20 rounded-xl p-6 text-center"
+            className="bg-primary/5 border border-primary/20 rounded-xl p-6 text-center mb-6"
           >
             <p className="text-foreground italic leading-relaxed">
               "You did what most people won't. You prepared. You learned. You took action. Now let's find you a home."
             </p>
             <p className="text-primary font-semibold mt-3">— Siri</p>
+          </motion.div>
+
+          {/* Share Achievement Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.6 }}
+            className="mb-8"
+          >
+            <ShareSection variant="achievement" />
           </motion.div>
 
           {/* Demo Note */}
