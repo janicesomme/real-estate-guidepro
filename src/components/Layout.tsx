@@ -7,16 +7,17 @@ import FloatingAskSiri from "@/components/FloatingAskSiri";
 interface LayoutProps {
   children: ReactNode;
   hideNav?: boolean;
+  hideFloatingButton?: boolean;
 }
 
 const navItems = [
-  { path: "/", icon: Home, label: "Home" },
+  { path: "/home", icon: Home, label: "Home" },
   { path: "/webinars", icon: Video, label: "Webinars" },
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/about", icon: User, label: "About" },
 ];
 
-const Layout = ({ children, hideNav = false }: LayoutProps) => {
+const Layout = ({ children, hideNav = false, hideFloatingButton = false }: LayoutProps) => {
   const location = useLocation();
 
   return (
@@ -24,7 +25,7 @@ const Layout = ({ children, hideNav = false }: LayoutProps) => {
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
 
       {/* Floating Ask Siri Button */}
-      <FloatingAskSiri />
+      {!hideFloatingButton && <FloatingAskSiri />}
 
       {!hideNav && (
         <>
@@ -32,7 +33,7 @@ const Layout = ({ children, hideNav = false }: LayoutProps) => {
           <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-50">
             <div className="flex justify-around items-center h-16 px-2 safe-area-pb">
               {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
+                const isActive = location.pathname === item.path || (item.path === "/home" && location.pathname === "/");
                 const Icon = item.icon;
                 return (
                   <Link
@@ -68,14 +69,14 @@ const Layout = ({ children, hideNav = false }: LayoutProps) => {
           {/* Desktop Header Navigation */}
           <nav className="hidden md:flex fixed top-0 left-0 right-0 bg-card/80 backdrop-blur-lg border-b border-border z-50">
             <div className="container flex items-center justify-between h-16">
-              <Link to="/" className="flex items-center gap-2">
+              <Link to="/home" className="flex items-center gap-2">
                 <span className="font-display text-xl font-bold text-foreground">
                   SIRI SOLANGE
                 </span>
               </Link>
               <div className="flex items-center gap-1">
                 {navItems.map((item) => {
-                  const isActive = location.pathname === item.path;
+                  const isActive = location.pathname === item.path || (item.path === "/home" && location.pathname === "/");
                   return (
                     <Link
                       key={item.path}

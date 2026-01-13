@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PathSelection from "./pages/PathSelection";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import Dashboard from "./pages/Dashboard";
@@ -10,6 +11,7 @@ import Webinars from "./pages/Webinars";
 import Partners from "./pages/Partners";
 import About from "./pages/About";
 import ActionTaker from "./pages/ActionTaker";
+import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,7 +23,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<PathSelection />} />
+          <Route path="/home" element={<Index />} />
+          <Route path="/coming-soon/:pathId" element={<ComingSoon />} />
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/webinars" element={<Webinars />} />

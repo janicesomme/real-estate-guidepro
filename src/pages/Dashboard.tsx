@@ -25,6 +25,7 @@ import StatusBadge from "@/components/StatusBadge";
 import CommitmentItem from "@/components/dashboard/CommitmentItem";
 import AskSiriBox from "@/components/AskSiriBox";
 import ShareSection from "@/components/ShareSection";
+import OtherPathsSection from "@/components/dashboard/OtherPathsSection";
 import { Progress } from "@/components/ui/progress";
 
 const Dashboard = () => {
@@ -362,6 +363,9 @@ const Dashboard = () => {
           >
             <ShareSection variant="referral" />
           </motion.div>
+
+          {/* Section: Other Paths */}
+          <OtherPathsSection />
 
           {/* Section 8: Quick Actions Footer */}
           <motion.div

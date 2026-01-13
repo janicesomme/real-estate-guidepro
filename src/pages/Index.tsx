@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ClipboardCheck, Video, LayoutDashboard, Users } from "lucide-react";
 import Layout from "@/components/Layout";
 import CTAButton from "@/components/CTAButton";
+import PathIndicator from "@/components/PathIndicator";
 
 const Index = () => {
   return (
@@ -25,10 +26,20 @@ const Index = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-primary font-medium text-sm md:text-base tracking-widest mb-6"
+              className="text-primary font-medium text-sm md:text-base tracking-widest mb-4"
             >
               MD • MBA • Real Estate Professional
             </motion.p>
+
+            {/* Path Indicator */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="mb-6"
+            >
+              <PathIndicator />
+            </motion.div>
 
             {/* Subtitle */}
             <motion.p
