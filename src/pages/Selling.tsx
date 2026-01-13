@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Tag, Home, MessageCircle, BarChart3, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -269,9 +268,12 @@ const Selling = () => {
                 <MessageCircle className="w-5 h-5 text-primary" />
                 <span className="text-sm text-foreground">
                   Questions?{" "}
-                  <Link to="/home" className="text-primary font-medium hover:underline">
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('openAskSiri'))}
+                    className="text-primary font-medium hover:underline"
+                  >
                     Ask Siri
-                  </Link>{" "}
+                  </button>{" "}
                   — I'm happy to chat before you submit.
                 </span>
               </div>
