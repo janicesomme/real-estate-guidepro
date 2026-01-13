@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, ChevronDown } from "lucide-react";
 
@@ -6,6 +6,11 @@ const FloatingAskSiri = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [topic, setTopic] = useState("general");
 
+  useEffect(() => {
+    const handleOpenAskSiri = () => setIsOpen(true);
+    window.addEventListener('openAskSiri', handleOpenAskSiri);
+    return () => window.removeEventListener('openAskSiri', handleOpenAskSiri);
+  }, []);
   return (
     <>
       {/* Overlay */}
