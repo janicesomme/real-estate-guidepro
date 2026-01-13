@@ -3,6 +3,7 @@ import { Trophy, AlertTriangle } from "lucide-react";
 import Layout from "@/components/Layout";
 import Card from "@/components/Card";
 import CourseModule from "@/components/course/CourseModule";
+import ShareSection from "@/components/ShareSection";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 
