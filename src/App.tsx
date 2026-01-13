@@ -6,12 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PathSelection from "./pages/PathSelection";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
+import InvestorAssessment from "./pages/InvestorAssessment";
+import EmptyNesterAssessment from "./pages/EmptyNesterAssessment";
+import RelocatorAssessment from "./pages/RelocatorAssessment";
+import UpsizerAssessment from "./pages/UpsizerAssessment";
 import Dashboard from "./pages/Dashboard";
 import Webinars from "./pages/Webinars";
 import Partners from "./pages/Partners";
 import About from "./pages/About";
 import ActionTaker from "./pages/ActionTaker";
-import ComingSoon from "./pages/ComingSoon";
 import FindYourHome from "./pages/FindYourHome";
 import Selling from "./pages/Selling";
 import AgentDashboard from "./pages/AgentDashboard";
@@ -28,8 +31,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<PathSelection />} />
           <Route path="/home" element={<Index />} />
-          <Route path="/coming-soon/:pathId" element={<ComingSoon />} />
           <Route path="/assessment" element={<Assessment />} />
+          <Route path="/assessment/investor" element={<InvestorAssessment />} />
+          <Route path="/assessment/empty-nester" element={<EmptyNesterAssessment />} />
+          <Route path="/assessment/relocator" element={<RelocatorAssessment />} />
+          <Route path="/assessment/upsizer" element={<UpsizerAssessment />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/webinars" element={<Webinars />} />
           <Route path="/partners" element={<Partners />} />
