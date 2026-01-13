@@ -9,6 +9,7 @@ const paths = [
     title: "Buying My First Home",
     subtitle: "Learn everything you need to buy with confidence",
     available: true,
+    route: "/home",
   },
   {
     id: "investor",
@@ -16,6 +17,7 @@ const paths = [
     title: "Looking to Invest in Real Estate",
     subtitle: "Build wealth through smart property investments",
     available: false,
+    route: "/coming-soon/investor",
   },
   {
     id: "empty-nester",
@@ -23,6 +25,7 @@ const paths = [
     title: "Downsizing / Empty Nester",
     subtitle: "Find the perfect next chapter home",
     available: false,
+    route: "/coming-soon/empty-nester",
   },
   {
     id: "relocator",
@@ -30,6 +33,7 @@ const paths = [
     title: "Relocating to This Area",
     subtitle: "Get to know the market before you arrive",
     available: false,
+    route: "/coming-soon/relocator",
   },
   {
     id: "upsizer",
@@ -37,6 +41,15 @@ const paths = [
     title: "Ready for a Bigger Home",
     subtitle: "Upgrade to the space your family needs",
     available: false,
+    route: "/coming-soon/upsizer",
+  },
+  {
+    id: "seller",
+    icon: "🏷️",
+    title: "Thinking of Selling My Home",
+    subtitle: "Get a free value estimate and selling guidance",
+    available: true,
+    route: "/selling",
   },
 ];
 
@@ -44,11 +57,7 @@ const PathSelection = () => {
   const navigate = useNavigate();
 
   const handlePathSelect = (path: typeof paths[0]) => {
-    if (path.available) {
-      navigate("/home");
-    } else {
-      navigate(`/coming-soon/${path.id}`);
-    }
+    navigate(path.route);
   };
 
   return (
