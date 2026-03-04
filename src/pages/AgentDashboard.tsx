@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  Users, FileText, Video, MessageSquare, Trophy, 
+import {
+  Users, FileText, Video, MessageSquare, Trophy,
   TrendingUp, ChevronDown, ChevronUp, Mail, BarChart3,
   Bell, Lightbulb, ArrowLeft
 } from "lucide-react";
@@ -18,20 +18,110 @@ import LeadDetailModal from "@/components/agent/LeadDetailModal";
 import ConversionFunnel from "@/components/agent/ConversionFunnel";
 import PathPerformanceTable from "@/components/agent/PathPerformanceTable";
 import InsightCard from "@/components/agent/InsightCard";
-import ActivityFeed from "@/components/agent/ActivityFeed";
+import { supabase } from "@/lib/supabase";
+import { useAgent } from "@/context/AgentContext";
+
+// TODO: replace with real agent_id from URL param once agent onboarding is built
+const TEST_AGENT_ID = "00000000-0000-0000-0000-000000000001";
+
+interface Question {
+  id: string;
+  question: string;
+  response: string | null;
+  status: string;
+  created_at: string;
+}
 
 const AgentDashboard = () => {
+  const { agent } = useAgent();
   const [hotLeadsOpen, setHotLeadsOpen] = useState(true);
   const [warmLeadsOpen, setWarmLeadsOpen] = useState(false);
   const [nurtureLeadsOpen, setNurtureLeadsOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
 
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [replies, setReplies] = useState<Record<string, string>>({});
+  const [sendingReply, setSendingReply] = useState<string | null>(null);
+  const [realProspectCount, setRealProspectCount] = useState<number | null>(null);
+  const [realQuestionCount, setRealQuestionCount] = useState<number | null>(null);
+  const [realPathCounts, setRealPathCounts] = useState<Record<string, number>>({});
+
+  const agentId = agent.id || TEST_AGENT_ID;
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      const { data, error } = await supabase
+        .from("james_app_questions")
+        .select("id, question, response, status, created_at")
+        .eq("agent_id", agentId)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) setQuestions(data);
+      setQuestionsLoading(false);
+    };
+
+    const fetchStats = async () => {
+      const [{ count: pCount }, { count: qCount }, { data: pathRows }] = await Promise.all([
+        supabase
+          .from("james_app_prospects")
+          .select("*", { count: "exact", head: true })
+          .eq("agent_id", agentId),
+        supabase
+          .from("james_app_questions")
+          .select("*", { count: "exact", head: true })
+          .eq("agent_id", agentId),
+        supabase
+          .from("james_app_prospects")
+          .select("path")
+          .eq("agent_id", agentId),
+      ]);
+
+      if (pCount !== null) setRealProspectCount(pCount);
+      if (qCount !== null) setRealQuestionCount(qCount);
+      if (pathRows) {
+        const counts: Record<string, number> = {};
+        pathRows.forEach(({ path }) => { counts[path] = (counts[path] || 0) + 1; });
+        setRealPathCounts(counts);
+      }
+    };
+
+    fetchQuestions();
+    fetchStats();
+  }, [agentId]);
+
+  const handleSendReply = async (questionId: string) => {
+    const replyText = replies[questionId]?.trim();
+    if (!replyText) return;
+
+    setSendingReply(questionId);
+    const { error } = await supabase
+      .from("james_app_questions")
+      .update({
+        response: replyText,
+        responded_at: new Date().toISOString(),
+        status: "answered",
+      })
+      .eq("id", questionId);
+
+    setSendingReply(null);
+
+    if (!error) {
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === questionId ? { ...q, response: replyText, status: "answered" } : q
+        )
+      );
+      setReplies((prev) => ({ ...prev, [questionId]: "" }));
+    }
+  };
+
   const overviewStats = [
     { value: "47", label: "App Visitors", trend: "↑ 23% vs last month", positive: true },
     { value: "23", label: "Assessments Started", trend: "↑ 15% vs last month", positive: true },
-    { value: "18", label: "Assessments Completed", trend: "78% completion rate", positive: true },
+    { value: realProspectCount !== null ? String(realProspectCount) : "—", label: "Assessments Completed", trend: "From Supabase", positive: true },
     { value: "12", label: "Webinar Registrations", trend: "↑ 8% vs last month", positive: true },
-    { value: "4", label: "Direct Inquiries", trend: "Via Ask Siri", positive: false },
+    { value: realQuestionCount !== null ? String(realQuestionCount) : "—", label: "Direct Inquiries", trend: "Via Ask Agent", positive: false },
     { value: "1", label: "Deals Closed", trend: "$8,500 commission", positive: true },
   ];
 
@@ -105,21 +195,11 @@ const AgentDashboard = () => {
   ];
 
   const pathData = [
-    { icon: "🏠", path: "First-Time Buyer", leads: 12, completionRate: "82%", avgScore: "6.2/10", topSource: "Instagram" },
-    { icon: "📈", path: "Investor", leads: 3, completionRate: "75%", avgScore: "7.1/10", topSource: "Facebook" },
-    { icon: "🪺", path: "Empty Nester", leads: 2, completionRate: "100%", avgScore: "8.0/10", topSource: "Referral" },
-    { icon: "📍", path: "Relocator", leads: 1, completionRate: "50%", avgScore: "5.0/10", topSource: "Google" },
-    { icon: "🏡", path: "Upsizer", leads: 0, completionRate: "—", avgScore: "—", topSource: "—" },
-  ];
-
-  const activities = [
-    { time: "10 min ago", description: "Sarah J. asked a question via app", icon: "💬" },
-    { time: "1 hour ago", description: "Mike C. completed the investor assessment", icon: "✅" },
-    { time: "2 hours ago", description: "New visitor from Instagram QR code", icon: "📱" },
-    { time: "3 hours ago", description: "Rebecca T. registered for Saturday's webinar", icon: "🎥" },
-    { time: "Yesterday", description: "Email campaign sent to 23 first-time buyers", icon: "📧" },
-    { time: "Yesterday", description: "3 new assessment starts from Facebook ad", icon: "📊" },
-    { time: "2 days ago", description: "Deal closed! Commission: $8,500", icon: "🎉" },
+    { icon: "🏠", path: "First-Time Buyer", leads: realPathCounts["first-time-buyer"] ?? 12, completionRate: "82%", avgScore: "6.2/10", topSource: "Instagram" },
+    { icon: "📈", path: "Investor", leads: realPathCounts["investor"] ?? 3, completionRate: "75%", avgScore: "7.1/10", topSource: "Facebook" },
+    { icon: "🪺", path: "Empty Nester", leads: realPathCounts["empty-nester"] ?? 2, completionRate: "100%", avgScore: "8.0/10", topSource: "Referral" },
+    { icon: "📍", path: "Relocator", leads: realPathCounts["relocator"] ?? 1, completionRate: "50%", avgScore: "5.0/10", topSource: "Google" },
+    { icon: "🏡", path: "Upsizer", leads: realPathCounts["upsizer"] ?? 0, completionRate: "—", avgScore: "—", topSource: "—" },
   ];
 
   return (
@@ -143,7 +223,7 @@ const AgentDashboard = () => {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-foreground">Siri Solange</p>
+              <p className="text-sm font-medium text-foreground">{agent.name}</p>
               <p className="text-xs text-muted-foreground">Last updated: January 13, 2026 at 2:34 PM</p>
             </div>
           </div>
@@ -383,12 +463,64 @@ const AgentDashboard = () => {
           </div>
         </section>
 
-        {/* Section 8: Activity Feed */}
+        {/* Section 8: Prospect Questions */}
         <section>
           <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            🔔 Recent Activity
+            💬 Prospect Questions
           </h2>
-          <ActivityFeed activities={activities} />
+          {questionsLoading ? (
+            <p className="text-sm text-muted-foreground">Loading questions...</p>
+          ) : questions.length === 0 ? (
+            <div className="bg-card rounded-xl p-6 border border-border text-center">
+              <p className="text-sm text-muted-foreground">No questions yet. They'll appear here when prospects ask via the app.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {questions.map((q) => (
+                <div key={q.id} className="bg-card rounded-xl p-5 border border-border">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <p className="text-sm font-medium text-foreground">{q.question}</p>
+                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+                      q.status === "answered"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                    }`}>
+                      {q.status === "answered" ? "Answered" : "Pending"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    {new Date(q.created_at).toLocaleDateString("en-AU", {
+                      day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                    })}
+                  </p>
+                  {q.response ? (
+                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Your reply</p>
+                      <p className="text-sm text-foreground">{q.response}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <textarea
+                        value={replies[q.id] ?? ""}
+                        onChange={(e) =>
+                          setReplies((prev) => ({ ...prev, [q.id]: e.target.value }))
+                        }
+                        placeholder="Type your reply..."
+                        className="w-full min-h-[60px] p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => handleSendReply(q.id)}
+                        disabled={sendingReply === q.id || !replies[q.id]?.trim()}
+                      >
+                        {sendingReply === q.id ? "Sending..." : "Send Reply"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Footer */}

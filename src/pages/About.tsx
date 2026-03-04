@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
 import Card from "@/components/Card";
+import { useAgent } from "@/context/AgentContext";
 
 const About = () => {
+  const { agent } = useAgent();
+  const initials = agent.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+
   return (
     <Layout>
       <div className="min-h-screen bg-background md:pt-16">
@@ -14,21 +18,32 @@ const About = () => {
             className="mb-8"
           >
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-              About Siri
+              About {agent.name.split(" ")[0]}
             </h1>
-            <p className="text-muted-foreground">
-              MD • MBA • Real Estate Professional
-            </p>
+            {agent.credentials && (
+              <p className="text-muted-foreground">{agent.credentials}</p>
+            )}
+            {agent.brokerage && (
+              <p className="text-sm text-muted-foreground">{agent.brokerage}</p>
+            )}
           </motion.div>
 
           {/* Coming Soon Card */}
           <Card>
             <div className="text-center py-12">
-              <div className="w-20 h-20 rounded-full gradient-primary mx-auto mb-6 flex items-center justify-center">
-                <span className="text-3xl font-display font-bold text-primary-foreground">
-                  SS
-                </span>
-              </div>
+              {agent.photo_url ? (
+                <img
+                  src={agent.photo_url}
+                  alt={agent.name}
+                  className="w-20 h-20 rounded-full object-cover mx-auto mb-6 border-4 border-primary/20"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full gradient-primary mx-auto mb-6 flex items-center justify-center">
+                  <span className="text-3xl font-display font-bold text-primary-foreground">
+                    {initials}
+                  </span>
+                </div>
+              )}
               <h2 className="font-display text-2xl font-bold text-foreground mb-3">
                 Content Coming Soon
               </h2>

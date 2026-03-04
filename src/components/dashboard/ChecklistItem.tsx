@@ -4,11 +4,15 @@ import { cn } from "@/lib/utils";
 interface ChecklistItemProps {
   text: string;
   completed: boolean;
+  onToggle?: () => void;
 }
 
-const ChecklistItem = ({ text, completed }: ChecklistItemProps) => {
+const ChecklistItem = ({ text, completed, onToggle }: ChecklistItemProps) => {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer">
+    <div
+      onClick={onToggle}
+      className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+    >
       <div
         className={cn(
           "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",

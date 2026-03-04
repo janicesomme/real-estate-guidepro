@@ -1,12 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, CheckCircle, Home, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Home, TrendingUp, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProgressBar from "@/components/ProgressBar";
 import Card from "@/components/Card";
 import AskSiriBox from "@/components/AskSiriBox";
 import ShareSection from "@/components/ShareSection";
+import { useAgent } from "@/context/AgentContext";
+import { supabase } from "@/lib/supabase";
+
+const generateFeedback = (answers: Record<number, number>): string[] => {
+  const points: string[] = [];
+  // Q2: strategy
+  if (answers[2] === 3) points.push("Not having a clear strategy yet is fine — but it's the first thing to nail down. Buy-and-hold, flip, short-term rental: each needs a different property type, budget, and finance structure.");
+  // Q3: capital
+  if (answers[3] === 3) points.push("Under $50K limits your options for traditional investing — but joint ventures, low-deposit investment loans, and rentvesting are all worth exploring with a specialist.");
+  if (answers[3] === 4) points.push("Still building capital is a starting point, not a dead end. There are strategies to get into the market earlier than most people think — worth a conversation with James Hair.");
+  // Q4: financing
+  if (answers[4] === 3) points.push("Investment property financing is more complex than owner-occupier loans — different deposit requirements, interest rates, and tax implications. Understanding this before you buy is non-negotiable.");
+  // Q5: ROI
+  if (answers[5] === 2) points.push("Knowing the terms but not the application is the gap that costs investors money. Cap rate, cash-on-cash return, and gross yield are quick to learn and essential for every deal assessment.");
+  if (answers[5] === 3) points.push("Without being able to analyse ROI yourself, you're relying entirely on others' numbers. This is the single most important skill to develop before making your first offer.");
+  // Q6: timeline
+  if (answers[6] === 4) points.push("If you're just exploring, that's the right time to get your finance pre-approved — so when the right deal appears, you can move within days, not weeks.");
+  if (points.length === 0) {
+    points.push("Your experience and strategy put you ahead of most investors. The next move is getting finance pre-approved so you can act fast when the right deal comes up.");
+    points.push("Talk to James Hair about investment loan structures — the right loan can materially improve your cash flow and borrowing capacity.");
+  }
+  return points.slice(0, 3);
+};
 
 interface Question {
   id: number;
@@ -98,9 +121,22 @@ const calculateScore = (answers: Record<number, number>): number => {
 
 const InvestorAssessment = () => {
   const navigate = useNavigate();
+  const { agent } = useAgent();
+  const firstName = agent.name.split(" ")[0];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    if (!showResults) return;
+    const s = calculateScore(answers);
+    supabase.from("james_app_prospects").insert({
+      agent_id: agent.id,
+      path: "investor",
+      readiness_score: s,
+      answers,
+    });
+  }, [showResults]);
 
   const handleAnswer = (optionIndex: number) => {
     setAnswers((prev) => ({
@@ -124,6 +160,7 @@ const InvestorAssessment = () => {
   };
 
   const score = calculateScore(answers);
+  const feedback = generateFeedback(answers);
 
   if (showResults) {
     return (
@@ -135,7 +172,6 @@ const InvestorAssessment = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Score Circle */}
               <div className="text-center mb-8">
                 <div className="inline-flex items-center justify-center w-32 h-32 rounded-full gradient-primary mb-4">
                   <div className="w-28 h-28 rounded-full bg-card flex items-center justify-center">
@@ -149,96 +185,65 @@ const InvestorAssessment = () => {
                   Your Investor Readiness
                 </h1>
                 <p className="text-muted-foreground">
-                  {score >= 7
-                    ? "You're in a strong position to invest!"
-                    : score >= 4
-                    ? "You're building a solid foundation"
-                    : "Let's get you investment-ready"}
+                  {score >= 7 ? "You're in a strong position to invest!" : score >= 4 ? "You're building a solid foundation" : "Let's get you investment-ready"}
                 </p>
               </div>
 
-              {/* Strengths */}
               <Card className="mb-6">
                 <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-primary" />
-                  Your Strengths
+                  What Your Answers Tell Us
                 </h2>
                 <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
-                    You have capital available to make a move
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
-                    Your timeline shows you're serious about investing
-                  </li>
+                  {feedback.map((point, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
                 </ul>
               </Card>
 
-              {/* Gaps */}
-              <Card className="mb-6">
-                <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-amber-500" />
-                  Areas to Strengthen
-                </h2>
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                    Understanding ROI metrics will help you spot the best deals
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                    Knowing your financing options can maximize your purchasing power
-                  </li>
-                </ul>
-              </Card>
+              {score >= 5 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                  className="mb-6 bg-primary/5 border border-primary/20 rounded-xl p-5">
+                  <p className="text-xs text-primary font-medium uppercase tracking-wide mb-1">{firstName}'s Recommended Next Step</p>
+                  <h3 className="font-semibold text-foreground mb-1">Talk to James Hair</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Investment loans work differently to standard mortgages. James Hair is {firstName}'s trusted loan officer — a free call will tell you exactly what you can borrow and how to structure it for maximum return.</p>
+                  <Link to="/partners" className="inline-flex items-center gap-2 px-4 py-2.5 gradient-primary text-primary-foreground rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
+                    <Phone className="w-4 h-4" /> Connect with James Hair
+                  </Link>
+                </motion.div>
+              )}
 
-              {/* Webinar Teaser */}
               <Card className="mb-6 border-primary/20 bg-primary/5">
                 <p className="text-sm text-foreground leading-relaxed">
-                  📈 Join my{" "}
-                  <span className="font-semibold text-primary">Investor Webinar</span> to learn 
-                  my exact process for analyzing properties and building a profitable portfolio.
+                  📈 Join my <span className="font-semibold text-primary">Investor Webinar</span> to learn my exact process for analysing properties and building a profitable portfolio.
                 </p>
               </Card>
 
-              {/* CTAs */}
               <div className="space-y-3 mb-6">
-                <Link
-                  to="/webinars"
-                  className="flex items-center justify-center w-full py-4 px-6 rounded-xl gradient-primary text-primary-foreground font-semibold shadow-button hover:opacity-90 transition-opacity"
-                >
+                <Link to="/webinars" className="flex items-center justify-center w-full py-4 px-6 rounded-xl gradient-primary text-primary-foreground font-semibold shadow-button hover:opacity-90 transition-opacity">
                   Join My Investor Webinar
                 </Link>
-                <Link
-                  to="/dashboard"
-                  className="flex items-center justify-center w-full py-4 px-6 rounded-xl bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors"
-                >
+                <Link to="/dashboard" className="flex items-center justify-center w-full py-4 px-6 rounded-xl bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors">
                   Save Results to My Dashboard
                 </Link>
               </div>
 
-              {/* Ask Siri Box */}
               <div className="mb-6">
                 <AskSiriBox
                   header="💬 Questions About Investing?"
-                  text="Real estate investing can seem complex. Ask me anything about getting started or analyzing your first deal."
+                  text="Real estate investing can seem complex. Ask me anything about getting started or analysing your first deal."
                   placeholder="What's your investment question?"
-                  buttonText="Send to Siri"
+                  buttonText={`Send to ${firstName}`}
                 />
               </div>
 
-              {/* Share Section */}
-              <div className="mb-6">
-                <ShareSection variant="assessment" />
-              </div>
+              <div className="mb-6"><ShareSection variant="assessment" /></div>
 
-              <Link
-                to="/"
-                className="flex items-center justify-center gap-2 w-full py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                Back to Home
+              <Link to="/" className="flex items-center justify-center gap-2 w-full py-3 text-muted-foreground hover:text-foreground transition-colors">
+                <Home className="w-4 h-4" /> Back to Home
               </Link>
             </motion.div>
           </div>

@@ -3,6 +3,8 @@ import { useLocation, Link } from "react-router-dom";
 import { Home, Video, LayoutDashboard, User } from "lucide-react";
 import { motion } from "framer-motion";
 import FloatingAskSiri from "@/components/FloatingAskSiri";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { useAgent } from "@/context/AgentContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,9 +21,11 @@ const navItems = [
 
 const Layout = ({ children, hideNav = false, hideFloatingButton = false }: LayoutProps) => {
   const location = useLocation();
+  const { agent } = useAgent();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <PWAInstallPrompt />
       <main className="flex-1 pb-24 md:pb-0">{children}</main>
 
       {/* Floating Ask Siri Button */}
@@ -81,7 +85,7 @@ const Layout = ({ children, hideNav = false, hideFloatingButton = false }: Layou
             <div className="container flex items-center justify-between h-16">
               <Link to="/home" className="flex items-center gap-2">
                 <span className="font-display text-xl font-bold text-foreground">
-                  SIRI SOLANGE
+                  {agent.name.toUpperCase()}
                 </span>
               </Link>
               <div className="flex items-center gap-1">
