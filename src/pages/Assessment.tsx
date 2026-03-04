@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle, Home, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import Card from "@/components/Card";
 import AskSiriBox from "@/components/AskSiriBox";
 import ShareSection from "@/components/ShareSection";
 import { useAgent } from "@/context/AgentContext";
+import { supabase } from "@/lib/supabase";
 
 interface Question {
   id: number;
@@ -161,6 +162,18 @@ const Assessment = () => {
     localStorage.setItem("assessment_path", "first-time-buyer");
     localStorage.setItem("assessment_date", new Date().toISOString());
   };
+
+  // Save to Supabase when results are shown
+  useEffect(() => {
+    if (!showResults) return;
+    const s = calculateScore(answers);
+    supabase.from("james_app_prospects").insert({
+      agent_id: agent.id,
+      path: "first-time-buyer",
+      readiness_score: s,
+      answers,
+    });
+  }, [showResults]);
 
   const goBack = () => {
     if (currentQuestion > 0) {

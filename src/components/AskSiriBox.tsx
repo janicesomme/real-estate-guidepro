@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
-// TODO: replace with real agent_id from URL param once agent onboarding is built
-const TEST_AGENT_ID = "00000000-0000-0000-0000-000000000001";
+import { useAgent } from "@/context/AgentContext";
 
 interface AskSiriBoxProps {
   header?: string;
@@ -20,6 +18,7 @@ const AskSiriBox = ({
   buttonText = "Send",
   showSignature = false,
 }: AskSiriBoxProps) => {
+  const { agent } = useAgent();
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -32,7 +31,7 @@ const AskSiriBox = ({
 
     const { error: insertError } = await supabase
       .from("james_app_questions")
-      .insert({ agent_id: TEST_AGENT_ID, question: question.trim() });
+      .insert({ agent_id: agent.id, question: question.trim() });
 
     setLoading(false);
 

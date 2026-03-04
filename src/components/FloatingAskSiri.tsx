@@ -4,9 +4,6 @@ import { MessageCircle, X, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAgent } from "@/context/AgentContext";
 
-// TODO: replace with real agent_id from URL param once agent onboarding is built
-const TEST_AGENT_ID = "00000000-0000-0000-0000-000000000001";
-
 const FloatingAskSiri = () => {
   const { agent } = useAgent();
   const firstName = agent.name.split(" ")[0];
@@ -40,7 +37,7 @@ const FloatingAskSiri = () => {
     const { error: insertError } = await supabase
       .from("james_app_questions")
       .insert({
-        agent_id: TEST_AGENT_ID,
+        agent_id: agent.id,
         question: `[${topic}] ${question.trim()}`,
       });
 

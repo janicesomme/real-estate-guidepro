@@ -1,12 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, CheckCircle, Home, Heart } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Home, Heart, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProgressBar from "@/components/ProgressBar";
 import Card from "@/components/Card";
 import AskSiriBox from "@/components/AskSiriBox";
 import ShareSection from "@/components/ShareSection";
+import { useAgent } from "@/context/AgentContext";
+import { supabase } from "@/lib/supabase";
+
+const generateFeedback = (answers: Record<number, number>): string[] => {
+  const points: string[] = [];
+  // Q2: know home value
+  if (answers[2] === 2) points.push("You don't know what your home is worth yet — this is your first step. A current appraisal is free, takes an hour, and is the foundation for every decision that follows.");
+  // Q3: equity
+  if (answers[3] === 3) points.push("Less than 25% equity limits what you'll have to work with for your next home. It's worth understanding this number clearly before you start planning the move.");
+  if (answers[3] === 4) points.push("Not knowing your equity position means you can't plan your budget. Let's get that number — it often surprises people.");
+  // Q5: most important
+  if (answers[5] === 3) points.push("Accessing equity for retirement is a smart strategy — but the timing and structure of how you do it matters a lot. Worth getting advice before you sell.");
+  // Q6: timeline
+  if (answers[6] === 3) points.push("If you're 1–2 years away, now is the perfect time to start — not to rush, but to make a plan. The best downsizers I work with start early and execute on their terms.");
+  if (answers[6] === 4) points.push("Even if this is still just a thought, understanding your options now means you'll be ready when the time feels right — and you won't be making rushed decisions.");
+  if (points.length === 0) {
+    points.push("Your position is strong — you have equity, a clear vision, and a realistic timeline. The next step is a current market appraisal to confirm your numbers.");
+    points.push("Talk to James Hair about the right financing structure for your next home before you sell.");
+  }
+  return points.slice(0, 3);
+};
 
 interface Question {
   id: number;
@@ -100,9 +121,17 @@ const calculateScore = (answers: Record<number, number>): number => {
 
 const EmptyNesterAssessment = () => {
   const navigate = useNavigate();
+  const { agent } = useAgent();
+  const firstName = agent.name.split(" ")[0];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    if (!showResults) return;
+    const s = calculateScore(answers);
+    supabase.from("james_app_prospects").insert({ agent_id: agent.id, path: "empty-nester", readiness_score: s, answers });
+  }, [showResults]);
 
   const handleAnswer = (optionIndex: number) => {
     setAnswers((prev) => ({
@@ -126,18 +155,14 @@ const EmptyNesterAssessment = () => {
   };
 
   const score = calculateScore(answers);
+  const feedback = generateFeedback(answers);
 
   if (showResults) {
     return (
       <Layout hideNav>
         <div className="min-h-screen bg-background">
           <div className="container py-8 md:py-16 max-w-lg">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Score Circle */}
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
               <div className="text-center mb-8">
                 <div className="inline-flex items-center justify-center w-32 h-32 rounded-full gradient-primary mb-4">
                   <div className="w-28 h-28 rounded-full bg-card flex items-center justify-center">
@@ -147,86 +172,60 @@ const EmptyNesterAssessment = () => {
                     </div>
                   </div>
                 </div>
-                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  Your Transition Readiness
-                </h1>
+                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Your Transition Readiness</h1>
                 <p className="text-muted-foreground">
-                  {score >= 7
-                    ? "You're in a great position to downsize!"
-                    : score >= 4
-                    ? "You're preparing well for the next chapter"
-                    : "Let's help you plan this exciting transition"}
+                  {score >= 7 ? "You're in a great position to downsize!" : score >= 4 ? "You're preparing well for the next chapter" : "Let's help you plan this exciting transition"}
                 </p>
               </div>
 
-              {/* Insights */}
               <Card className="mb-6">
                 <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-primary" />
-                  Your Transition Insights
+                  <Heart className="w-5 h-5 text-primary" />What Your Answers Tell Us
                 </h2>
                 <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
-                    Your equity position gives you excellent flexibility for your next home
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
-                    You have a clear vision of what you want in your next chapter
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                    Getting a current home valuation will help you plan your budget
-                  </li>
+                  {feedback.map((point, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />{point}
+                    </li>
+                  ))}
                 </ul>
               </Card>
 
-              {/* Teaser */}
+              {score >= 5 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                  className="mb-6 bg-primary/5 border border-primary/20 rounded-xl p-5">
+                  <p className="text-xs text-primary font-medium uppercase tracking-wide mb-1">{firstName}'s Recommended Next Step</p>
+                  <h3 className="font-semibold text-foreground mb-1">Talk to James Hair</h3>
+                  <p className="text-sm text-muted-foreground mb-4">When you're selling and buying simultaneously, the finance structure is everything. James Hair is {firstName}'s trusted loan officer — he can map out your options before you list.</p>
+                  <Link to="/partners" className="inline-flex items-center gap-2 px-4 py-2.5 gradient-primary text-primary-foreground rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
+                    <Phone className="w-4 h-4" /> Connect with James Hair
+                  </Link>
+                </motion.div>
+              )}
+
               <Card className="mb-6 border-primary/20 bg-primary/5">
                 <p className="text-sm text-foreground leading-relaxed">
-                  🪺 Ready to take the next step? I can help you{" "}
-                  <span className="font-semibold text-primary">maximize your home's value</span> and 
-                  find the perfect right-sized home for your lifestyle.
+                  🪺 Ready to take the next step? I can help you <span className="font-semibold text-primary">maximise your home's value</span> and find the perfect right-sized home for your lifestyle.
                 </p>
               </Card>
 
-              {/* CTAs */}
               <div className="space-y-3 mb-6">
-                <Link
-                  to="/selling"
-                  className="flex items-center justify-center w-full py-4 px-6 rounded-xl gradient-primary text-primary-foreground font-semibold shadow-button hover:opacity-90 transition-opacity"
-                >
+                <Link to="/selling" className="flex items-center justify-center w-full py-4 px-6 rounded-xl gradient-primary text-primary-foreground font-semibold shadow-button hover:opacity-90 transition-opacity">
                   Get a Free Home Value Estimate
                 </Link>
-                <Link
-                  to="/dashboard"
-                  className="flex items-center justify-center w-full py-4 px-6 rounded-xl bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors"
-                >
+                <Link to="/dashboard" className="flex items-center justify-center w-full py-4 px-6 rounded-xl bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors">
                   Save Results to My Dashboard
                 </Link>
               </div>
 
-              {/* Ask Siri Box */}
               <div className="mb-6">
-                <AskSiriBox
-                  header="💬 Questions About Downsizing?"
-                  text="This is a big decision. Ask me anything about timing, the process, or what to expect."
-                  placeholder="What's on your mind about downsizing?"
-                  buttonText="Send to Siri"
-                />
+                <AskSiriBox header="💬 Questions About Downsizing?" text="This is a big decision. Ask me anything about timing, the process, or what to expect." placeholder="What's on your mind about downsizing?" buttonText={`Send to ${firstName}`} />
               </div>
 
-              {/* Share Section */}
-              <div className="mb-6">
-                <ShareSection variant="assessment" />
-              </div>
+              <div className="mb-6"><ShareSection variant="assessment" /></div>
 
-              <Link
-                to="/"
-                className="flex items-center justify-center gap-2 w-full py-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                Back to Home
+              <Link to="/" className="flex items-center justify-center gap-2 w-full py-3 text-muted-foreground hover:text-foreground transition-colors">
+                <Home className="w-4 h-4" /> Back to Home
               </Link>
             </motion.div>
           </div>
