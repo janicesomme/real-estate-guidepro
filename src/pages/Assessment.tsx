@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, CheckCircle, Home } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Home, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProgressBar from "@/components/ProgressBar";
 import Card from "@/components/Card";
 import AskSiriBox from "@/components/AskSiriBox";
 import ShareSection from "@/components/ShareSection";
+import { useAgent } from "@/context/AgentContext";
 
 interface Question {
   id: number;
@@ -72,6 +73,44 @@ const questions: Question[] = [
   },
 ];
 
+const generateFeedback = (answers: Record<number, number>): string[] => {
+  const points: string[] = [];
+
+  // Q1: Pre-approved?
+  if (answers[1] === 1) points.push("Getting pre-approved is your most important next step. It tells you exactly what you can spend and makes sellers take your offer seriously.");
+  if (answers[1] === 2) points.push("Pre-approval is not as scary as it sounds. It's a free conversation with a lender and it's the single biggest thing you can do to get ready.");
+
+  // Q2: Know affordability?
+  if (answers[2] === 2) points.push("Not knowing your real budget is risky — you could fall in love with a home you can't afford, or miss ones you can. Let's fix that.");
+
+  // Q3: Down payment?
+  if (answers[3] === 2) points.push("You're still saving — but you might be closer than you think. There are government grants and low-deposit loan programs worth exploring now.");
+  if (answers[3] === 3) points.push("You don't need 20% down. Many buyers buy with 5–10%. Let's look at what's available for your situation.");
+
+  // Q4: Assistance programs?
+  if (answers[4] === 2) points.push("Down payment assistance programs are real and underused. Many first-time buyers qualify and never claim it — don't leave money on the table.");
+
+  // Q5: Credit score?
+  if (answers[5] === 2) points.push("A fair credit score will get you approved, but a better score means a lower rate — which could save you hundreds per month. A few targeted moves now make a real difference.");
+  if (answers[5] === 3) points.push("A score below 650 will make financing harder and more expensive. The good news: specific actions can improve it faster than most people think.");
+  if (answers[5] === 4) points.push("You don't know your credit score yet. This is your most important number — check it for free before anything else. It affects your rate, your approval, and your options.");
+
+  // Q6: Hidden costs?
+  if (answers[6] === 1) points.push("There are more hidden costs than most buyers realise — stamp duty, conveyancing, inspections, moving, immediate repairs. Budget an extra 5–7% on top of your deposit.");
+  if (answers[6] === 2) points.push("Not budgeting for hidden costs is the #1 reason buyers get caught short on settlement day. Use the True Cost Calculator to see the full picture.");
+
+  // Q7: Pre-qual vs pre-approval?
+  if (answers[7] === 1 || answers[7] === 2) points.push("Pre-qualification and pre-approval are very different things. Only one of them will get your offer accepted in a competitive market — and it's not the quick online one.");
+
+  if (points.length === 0) {
+    points.push("You're well prepared — most buyers aren't at your level yet.");
+    points.push("The next step is locking in your finance so you're ready to act fast when the right property comes up.");
+    points.push("Talk to James Hair about securing a pre-approval at a competitive rate.");
+  }
+
+  return points.slice(0, 3);
+};
+
 const calculateScore = (answers: Record<number, number>): number => {
   let score = 0;
   
@@ -94,6 +133,8 @@ const calculateScore = (answers: Record<number, number>): number => {
 
 const Assessment = () => {
   const navigate = useNavigate();
+  const { agent } = useAgent();
+  const firstName = agent.name.split(" ")[0];
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
@@ -114,6 +155,13 @@ const Assessment = () => {
     }, 300);
   };
 
+  const saveToLocalStorage = (score: number) => {
+    localStorage.setItem("assessment_score", String(score));
+    localStorage.setItem("assessment_answers", JSON.stringify(answers));
+    localStorage.setItem("assessment_path", "first-time-buyer");
+    localStorage.setItem("assessment_date", new Date().toISOString());
+  };
+
   const goBack = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1);
@@ -121,6 +169,7 @@ const Assessment = () => {
   };
 
   const score = calculateScore(answers);
+  const feedback = generateFeedback(answers);
 
   if (showResults) {
     return (
@@ -147,37 +196,53 @@ const Assessment = () => {
                 </h1>
                 <p className="text-muted-foreground">
                   {score >= 7
-                    ? "You're well prepared!"
+                    ? "You're well prepared — most buyers aren't at your level"
                     : score >= 4
                     ? "You're on your way — but there's more to know"
                     : "Let's get you ready for homeownership"}
                 </p>
               </div>
 
-              {/* Feedback */}
+              {/* Personalised Feedback */}
               <Card className="mb-6">
                 <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-primary" />
-                  What We Noticed
+                  What Your Answers Tell Us
                 </h2>
                 <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    You've started saving, which is great — but do you know about programs
-                    that could help you buy sooner?
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    Understanding the difference between pre-qualified and pre-approved could
-                    save you from heartbreak on your dream home.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    There are hidden costs most first-time buyers don't budget for — do you
-                    know what they are?
-                  </li>
+                  {feedback.map((point, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
                 </ul>
               </Card>
+
+              {/* James CTA — shown when score >= 5 (ready to take action) */}
+              {score >= 5 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-6 bg-primary/5 border border-primary/20 rounded-xl p-5"
+                >
+                  <p className="text-xs text-primary font-medium uppercase tracking-wide mb-1">
+                    {firstName}'s Recommended Next Step
+                  </p>
+                  <h3 className="font-semibold text-foreground mb-1">Talk to James Hair</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Your score says you're ready to get serious. James is {firstName}'s trusted loan officer — a free call with him will tell you exactly what you can borrow and at what rate.
+                  </p>
+                  <Link
+                    to="/partners"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 gradient-primary text-primary-foreground rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <Phone className="w-4 h-4" />
+                    Connect with James
+                  </Link>
+                </motion.div>
+              )}
 
               {/* Webinar Teaser */}
               <Card className="mb-6 border-primary/20 bg-primary/5">
@@ -198,19 +263,20 @@ const Assessment = () => {
                 </Link>
                 <Link
                   to="/dashboard"
+                  onClick={() => saveToLocalStorage(score)}
                   className="flex items-center justify-center w-full py-4 px-6 rounded-xl bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors"
                 >
                   Save Results to My Dashboard
                 </Link>
               </div>
 
-              {/* Ask Siri Box */}
+              {/* Ask Agent Box */}
               <div className="mb-6">
                 <AskSiriBox
-                  header="💬 Questions About Your Results?"
+                  header={`💬 Questions About Your Results?`}
                   text="Your score might raise some questions. That's normal. Ask me anything about what it means or what to do next."
                   placeholder="What's your question about your results?"
-                  buttonText="Send to Siri"
+                  buttonText={`Send to ${firstName}`}
                 />
               </div>
 

@@ -1,16 +1,58 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, ChevronDown } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAgent } from "@/context/AgentContext";
+
+// TODO: replace with real agent_id from URL param once agent onboarding is built
+const TEST_AGENT_ID = "00000000-0000-0000-0000-000000000001";
 
 const FloatingAskSiri = () => {
+  const { agent } = useAgent();
+  const firstName = agent.name.split(" ")[0];
+
   const [isOpen, setIsOpen] = useState(false);
   const [topic, setTopic] = useState("general");
+  const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleOpenAskSiri = () => setIsOpen(true);
     window.addEventListener('openAskSiri', handleOpenAskSiri);
     return () => window.removeEventListener('openAskSiri', handleOpenAskSiri);
   }, []);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setSent(false);
+    setQuestion("");
+    setError(null);
+    setTopic("general");
+  };
+
+  const handleSend = async () => {
+    if (!question.trim()) return;
+    setLoading(true);
+    setError(null);
+
+    const { error: insertError } = await supabase
+      .from("james_app_questions")
+      .insert({
+        agent_id: TEST_AGENT_ID,
+        question: `[${topic}] ${question.trim()}`,
+      });
+
+    setLoading(false);
+    if (insertError) {
+      setError("Something went wrong. Please try again.");
+    } else {
+      setSent(true);
+      setQuestion("");
+    }
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -21,7 +63,7 @@ const FloatingAskSiri = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/40 z-40"
-            onClick={() => setIsOpen(false)}
+            onClick={handleClose}
           />
         )}
       </AnimatePresence>
@@ -37,7 +79,7 @@ const FloatingAskSiri = () => {
             className="fixed bottom-24 md:bottom-8 right-4 z-50 w-14 h-14 rounded-full gradient-primary text-primary-foreground shadow-lg shadow-primary/30 flex flex-col items-center justify-center hover:scale-105 transition-transform"
           >
             <MessageCircle className="w-6 h-6" />
-            <span className="text-[9px] font-medium -mt-0.5">Ask Siri</span>
+            <span className="text-[9px] font-medium -mt-0.5">Ask {firstName}</span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -57,10 +99,10 @@ const FloatingAskSiri = () => {
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-foreground">Ask Siri</h3>
+                  <h3 className="font-semibold text-foreground">Ask {firstName}</h3>
                 </div>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                   className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
                 >
                   <X className="w-4 h-4 text-muted-foreground" />
@@ -69,43 +111,65 @@ const FloatingAskSiri = () => {
 
               {/* Content */}
               <div className="p-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Have a question? Just ask. I personally read and respond to every message.
-                </p>
-
-                {/* Text Area */}
-                <textarea
-                  placeholder="Type your question here..."
-                  className="w-full min-h-[100px] p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-
-                {/* Topic Dropdown */}
-                <div className="mt-3 relative">
-                  <label className="text-xs text-muted-foreground mb-1 block">About:</label>
-                  <div className="relative">
-                    <select
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      className="w-full p-2.5 pr-10 rounded-lg border border-border bg-background text-foreground text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                {sent ? (
+                  <div className="text-center py-4">
+                    <p className="text-green-600 font-medium mb-1">Question sent!</p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {firstName} will respond within 24 hours.
+                    </p>
+                    <button
+                      onClick={() => setSent(false)}
+                      className="text-xs text-muted-foreground underline"
                     >
-                      <option value="general">General</option>
-                      <option value="assessment">My Assessment</option>
-                      <option value="webinar">Webinar Content</option>
-                      <option value="next-steps">Next Steps</option>
-                      <option value="other">Other</option>
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      Ask another question
+                    </button>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Have a question? Just ask. {firstName} personally reads and responds to every message.
+                    </p>
 
-                {/* Submit */}
-                <button className="w-full mt-4 py-3 gradient-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-                  Send Question
-                </button>
+                    <textarea
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
+                      placeholder="Type your question here..."
+                      className="w-full min-h-[100px] p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
 
-                <p className="text-xs text-muted-foreground text-center mt-3">
-                  Usually responds within 24 hours
-                </p>
+                    <div className="mt-3 relative">
+                      <label className="text-xs text-muted-foreground mb-1 block">About:</label>
+                      <div className="relative">
+                        <select
+                          value={topic}
+                          onChange={(e) => setTopic(e.target.value)}
+                          className="w-full p-2.5 pr-10 rounded-lg border border-border bg-background text-foreground text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        >
+                          <option value="general">General</option>
+                          <option value="assessment">My Assessment</option>
+                          <option value="webinar">Webinar Content</option>
+                          <option value="next-steps">Next Steps</option>
+                          <option value="other">Other</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+
+                    <button
+                      onClick={handleSend}
+                      disabled={loading || !question.trim()}
+                      className="w-full mt-4 py-3 gradient-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? "Sending..." : "Send Question"}
+                    </button>
+
+                    <p className="text-xs text-muted-foreground text-center mt-3">
+                      Usually responds within 24 hours
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

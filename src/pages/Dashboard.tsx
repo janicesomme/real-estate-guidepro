@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { 
-  Target, 
-  RefreshCw, 
-  TrendingUp, 
+import {
+  Target,
+  RefreshCw,
+  TrendingUp,
   TrendingDown,
-  Play, 
+  Play,
   CalendarPlus,
   Heart,
   Home,
@@ -13,6 +13,7 @@ import {
   MapPin,
   Lightbulb
 } from "lucide-react";
+import { useAgent } from "@/context/AgentContext";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Card from "@/components/Card";
@@ -29,17 +30,54 @@ import OtherPathsSection from "@/components/dashboard/OtherPathsSection";
 import ReferralCards from "@/components/dashboard/ReferralCards";
 import { Progress } from "@/components/ui/progress";
 
+const CHECKLIST_DEFAULTS = [
+  { id: 1, text: "Completed readiness assessment" },
+  { id: 2, text: "Registered for webinar" },
+  { id: 3, text: "Know your credit score range" },
+  { id: 4, text: "Get pre-approved for mortgage" },
+  { id: 5, text: "Set your budget range" },
+  { id: 6, text: "Identify target neighbourhoods" },
+  { id: 7, text: "Attend first-time buyer webinar" },
+  { id: 8, text: "Schedule a call with your agent" },
+];
+
+const loadChecklist = (): Record<number, boolean> => {
+  try {
+    const saved = localStorage.getItem("checklist");
+    // Pre-check item 1 if they've done the assessment
+    const hasAssessment = !!localStorage.getItem("assessment_score");
+    const base = saved ? JSON.parse(saved) : {};
+    if (hasAssessment) base[1] = true;
+    return base;
+  } catch {
+    return {};
+  }
+};
+
 const Dashboard = () => {
-  const checklistItems = [
-    { id: 1, text: "Completed readiness assessment", completed: true },
-    { id: 2, text: "Registered for webinar", completed: true },
-    { id: 3, text: "Know your credit score range", completed: true },
-    { id: 4, text: "Get pre-approved for mortgage", completed: false },
-    { id: 5, text: "Set your budget range", completed: false },
-    { id: 6, text: "Identify target neighbourhoods", completed: false },
-    { id: 7, text: "Attend first-time buyer webinar", completed: false },
-    { id: 8, text: "Schedule a call with Siri", completed: false },
-  ];
+  const { agent } = useAgent();
+  const firstName = agent.name.split(" ")[0];
+  const savedScore = parseInt(localStorage.getItem("assessment_score") || "6", 10);
+
+  const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>(loadChecklist);
+
+  const toggleItem = (id: number) => {
+    setCheckedItems((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      localStorage.setItem("checklist", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const checklistItems = CHECKLIST_DEFAULTS.map((item) => ({
+    ...item,
+    completed: !!checkedItems[item.id],
+  }));
+
+  // Readiness score updates as checklist progresses
+  const completedCount = checklistItems.filter((i) => i.completed).length;
+  const checklistBonus = Math.round((completedCount / checklistItems.length) * 3); // up to 3 bonus points
+  const liveScore = Math.min(10, savedScore + checklistBonus);
 
   const commitments = [
     { id: 1, text: "Check my credit score this week", committedDate: "Jan 12", completed: false },
@@ -48,7 +86,6 @@ const Dashboard = () => {
     { id: 4, text: "Get pre-qualification letter", committedDate: "Jan 20", completed: false },
   ];
 
-  const completedCount = checklistItems.filter(item => item.completed).length;
   const completedCommitments = commitments.filter(c => c.completed).length;
   const commitmentRate = Math.round((completedCommitments / commitments.length) * 100);
 
@@ -76,7 +113,7 @@ const Dashboard = () => {
           {/* Section 1: Readiness Score Hero */}
           <Card delay={0.1} className="mb-6 text-center py-8">
             <div className="flex flex-col items-center">
-              <CircularProgress score={6} maxScore={10} />
+              <CircularProgress score={liveScore} maxScore={10} />
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -117,7 +154,12 @@ const Dashboard = () => {
             <Progress value={(completedCount / checklistItems.length) * 100} className="mb-4 h-2" />
             <div className="space-y-2">
               {checklistItems.map((item) => (
-                <ChecklistItem key={item.id} text={item.text} completed={item.completed} />
+                <ChecklistItem
+                  key={item.id}
+                  text={item.text}
+                  completed={item.completed}
+                  onToggle={() => toggleItem(item.id)}
+                />
               ))}
             </div>
             <p className="text-xs text-muted-foreground mt-4 text-center">
@@ -162,7 +204,7 @@ const Dashboard = () => {
             className="mb-6"
           >
             <AskSiriBox
-              header="💬 Stuck? Ask Siri"
+              header={`💬 Stuck? Ask ${firstName}`}
               text="Not sure what to do next? Confused about something? Need advice? Just ask."
               placeholder="Type your question..."
               buttonText="Send"
@@ -223,6 +265,7 @@ const Dashboard = () => {
                 title="Get Pre-Approved"
                 text="You're ready for this step. It'll give you certainty on your budget and make you a stronger buyer."
                 buttonText="Connect with James"
+                buttonTo="/partners"
                 priority
                 delay={0.45}
               />
@@ -328,7 +371,7 @@ const Dashboard = () => {
               <p className="text-sm text-foreground italic">
                 "The market is competitive but inventory is growing. If you're pre-approved, this is a good time to start looking seriously."
               </p>
-              <p className="text-sm font-medium text-primary mt-2">— Siri</p>
+              <p className="text-sm font-medium text-primary mt-2">— {firstName}</p>
             </div>
 
             <button className="w-full py-2.5 bg-secondary text-foreground rounded-lg font-medium text-sm hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2">
@@ -387,7 +430,7 @@ const Dashboard = () => {
             </Link>
             <button className="flex-1 py-3 bg-secondary text-foreground rounded-xl font-medium text-sm hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2">
               <Phone className="w-4 h-4" />
-              Contact Siri
+              Contact {firstName}
             </button>
             <Link
               to="/webinars"

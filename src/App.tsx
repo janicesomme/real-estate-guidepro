@@ -18,7 +18,10 @@ import ActionTaker from "./pages/ActionTaker";
 import FindYourHome from "./pages/FindYourHome";
 import Selling from "./pages/Selling";
 import AgentDashboard from "./pages/AgentDashboard";
+import AgentOnboarding from "./pages/AgentOnboarding";
+import TrueCostCalculator from "./pages/TrueCostCalculator";
 import NotFound from "./pages/NotFound";
+import { AgentProvider } from "./context/AgentContext";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +31,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AgentProvider>
         <Routes>
           <Route path="/" element={<PathSelection />} />
           <Route path="/home" element={<Index />} />
@@ -44,9 +48,12 @@ const App = () => (
           <Route path="/find-your-home" element={<FindYourHome />} />
           <Route path="/selling" element={<Selling />} />
           <Route path="/agent" element={<AgentDashboard />} />
+          <Route path="/onboarding" element={<AgentOnboarding />} />
+          <Route path="/true-cost-calculator" element={<TrueCostCalculator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </AgentProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

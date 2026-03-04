@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
-import { ClipboardCheck, Video, LayoutDashboard, Users, Home, Tag } from "lucide-react";
+import { ClipboardCheck, Video, LayoutDashboard, Users, Home, Tag, Calculator } from "lucide-react";
 import Layout from "@/components/Layout";
 import CTAButton from "@/components/CTAButton";
 import PathIndicator from "@/components/PathIndicator";
+import { useAgent } from "@/context/AgentContext";
 
 const Index = () => {
+  const { agent } = useAgent();
+
   return (
     <Layout>
       <div className="gradient-hero min-h-screen md:pt-16">
@@ -16,20 +19,44 @@ const Index = () => {
             transition={{ duration: 0.6 }}
             className="text-center max-w-2xl mx-auto"
           >
+            {/* Photo */}
+            {agent.photo_url && (
+              <motion.img
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+                src={agent.photo_url}
+                alt={agent.name}
+                className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-primary/20"
+              />
+            )}
+
             {/* Name */}
             <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground tracking-tight mb-3">
-              SIRI SOLANGE
+              {agent.name.toUpperCase()}
             </h1>
 
             {/* Credentials */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-primary font-medium text-sm md:text-base tracking-widest mb-4"
-            >
-              MD • MBA • Real Estate Professional
-            </motion.p>
+            {agent.credentials && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-primary font-medium text-sm md:text-base tracking-widest mb-4"
+              >
+                {agent.credentials}
+              </motion.p>
+            )}
+            {agent.brokerage && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.22 }}
+                className="text-muted-foreground text-sm mb-4"
+              >
+                {agent.brokerage}
+              </motion.p>
+            )}
 
             {/* Path Indicator */}
             <motion.div
@@ -152,6 +179,20 @@ const Index = () => {
                 icon={<Tag className="w-5 h-5" />}
               >
                 🏷️ Thinking of Selling?
+              </CTAButton>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.0 }}
+            >
+              <CTAButton
+                to="/true-cost-calculator"
+                variant="outline"
+                icon={<Calculator className="w-5 h-5" />}
+              >
+                💰 True Cost Calculator
               </CTAButton>
             </motion.div>
           </div>
