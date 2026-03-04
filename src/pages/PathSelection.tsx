@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { useAgent } from "@/context/AgentContext";
 
 const paths = [
   {
@@ -55,6 +56,7 @@ const paths = [
 
 const PathSelection = () => {
   const navigate = useNavigate();
+  const { agent } = useAgent();
 
   const handlePathSelect = (path: typeof paths[0]) => {
     navigate(path.route);
@@ -71,10 +73,10 @@ const PathSelection = () => {
             className="text-center max-w-2xl mx-auto mb-10"
           >
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground tracking-tight mb-3">
-              SIRI SOLANGE
+              {agent.name.toUpperCase()}
             </h1>
             <p className="text-primary font-medium text-sm md:text-base tracking-widest mb-8">
-              MD • MBA • Real Estate Professional
+              {agent.credentials}
             </p>
             <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
               Welcome! Let's personalize your experience.
