@@ -39,7 +39,7 @@ const AgentContext = createContext<AgentContextValue>({
 export const AgentProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchParams] = useSearchParams();
   const [agent, setAgent] = useState<Agent>(DEFAULT_AGENT);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Persist slug across navigation
@@ -47,7 +47,10 @@ export const AgentProvider = ({ children }: { children: React.ReactNode }) => {
     if (paramSlug) sessionStorage.setItem("agent_slug", paramSlug);
     const slug = paramSlug || sessionStorage.getItem("agent_slug");
 
-    if (!slug) return;
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     supabase
